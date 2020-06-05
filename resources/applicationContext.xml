@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:tx="http://www.springframework.org/schema/tx" 
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc" 
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+	   http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+       http://www.springframework.org/schema/tx 
+       http://www.springframework.org/schema/tx/spring-tx-4.3.xsd
+       http://www.springframework.org/schema/context 
+       http://www.springframework.org/schema/context/spring-context-4.3.xsd
+       http://www.springframework.org/schema/mvc 
+       http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd 
+       http://www.springframework.org/schema/aop 
+       http://www.springframework.org/schema/aop/spring-aop-4.3.xsd">
+       
+    <!-- 1,引入外部属性文件，数据库配置信息 -->
+    <context:property-placeholder location="classpath:database.properties" 
+    	system-properties-mode="NEVER"/>
+    <!-- 2,将 cn.smbms.service 下的组件扫描到容器-->
+    <context:component-scan base-package="cn.llf.service"></context:component-scan>
+    <!-- 3,配置数据库连接池 -->
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+    	<property name="driverClassName">
+    		<value>${driver}</value>
+    	</property>
+    	<property name="url">
+    		<value>${url}</value>
+    	</property>
+    	<property name="username">
+    		<value>${user}</value>
+    	</property>
+    	<property name="password">
+    		<value>${password}</value>
+    	</property>
+    	<!-- 初始大小 -->
+    	<property name="initialSize">
+    		<value>30</value>
+    	</property>
+    	<!-- 最大活动，并发数 -->
+    	<property name="maxActive">
+    		<value>100</value>
+    	</property>
+    	<!-- 最大空闲 -->
+    	<property name="maxIdle">
+    		<value>30</value>
+    	</property>
+    	<!-- 最小空闲 -->
+    	<property name="minIdle">
+    		<value>30</value>
+    	</property>
+    	<!-- 空闲连接回收 -->
+    	<property name="removeAbandoned">
+    		<value>true</value>
+    	</property>
+    	<!-- 回收的超时时间,默认300，单位是秒 -->
+    	<property name="removeAbandonedTimeout">
+    		<value>180</value>
+    	</property>
+    	<!-- 最大等待时间 -->
+    	<property name="maxWait">
+    		<value>3000</value>
+    	</property>
+    	<property name="testWhileIdle">
+    		<value>true</value>
+    	</property>
+    	<!-- 检测间隔时间 -->
+    	<property name="timeBetweenEvictionRunsMillis">
+    		<value>60000</value>
+    	</property>
+    	<!-- 借出是否检查 -->
+    	<property name="testOnBorrow">
+    		<value>false</value>
+    	</property>
+    	<!-- 归还是否检查 -->
+    	<property name="testOnReturn">
+    		<value>false</value>
+    	</property>
+    	<!-- 验证SQL，此语句要保持简单 -->
+    	<property name="validationQuery">
+    		<value>select 1</value>
+    	</property>
+    	<!-- 检测数量 -->
+    	<property name="numTestsPerEvictionRun">
+    		<value>100</value>
+    	</property>
+    </bean>
+    <!-- 4,配置 SqlSessionFactory -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+    	<property name="dataSource">
+    		<ref bean="dataSource"/>
+    	</property>
+    	<property name="configLocation">
+    		<value>classpath:mybatis-config.xml</value>
+    	</property>
+    	<property name="mapperLocations">
+    		<value>classpath:cn/llf/mapper/*.xml</value>
+    	</property>
+    </bean>
+    <!-- 5,配置MapperScannerConfigurer -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+    	<property name="basePackage">
+    		<value>cn.llf.mapper</value>
+    	</property>
+    	<property name="sqlSessionFactoryBeanName">
+    		<value>sqlSessionFactory</value>
+    	</property>
+    </bean>
+    <!-- 6,配置事务管理器 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    	<property name="dataSource">
+    		<ref bean="dataSource"/>
+    	</property>
+    </bean>
+    <!-- 7,配置注解事务 -->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+    <!-- 8,AOP配置 -->
+    <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+    
+</beans>
